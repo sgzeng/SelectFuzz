@@ -65,7 +65,7 @@ if [ $RESUME -le $STEP ]; then
       while ! opt -dot-callgraph $binary.0.0.*.bc >/dev/null 2> $TMPDIR/step${STEP}.log ; do
         echo -e "\e[93;1m[!]\e[0m Could not generate call graph. Repeating.."
       done
-      opt -load /selectfuzz/libDFUZZPASS.so -DFUZZPASS $binary.0.0.preopt.bc -targets=$TMPDIR/BBtargets.txt -outdir=$TMPDIR
+      opt -load $FUZZER/llvmpass/build/libDFUZZPASS.so -DFUZZPASS $binary.0.0.preopt.bc -targets=$TMPDIR/BBtargets.txt -outdir=$TMPDIR
 
       #Remove repeated lines and rename
       awk '!a[$0]++' callgraph.dot > callgraph.$(basename $binary).dot
@@ -78,22 +78,16 @@ if [ $RESUME -le $STEP ]; then
 
   else
 
-    #crtDir = $PWD
-    #pushd /temporal-specialization/SVF
      
-    rm ./indirect.txt
-    /selectfuzz/temporal-specialization/SVF/Release-build/bin/wpa -print-fp -ander -dump-callgraph $fuzzer.0.0.preopt.bc
+    $FUZZER/svf-bin/wpa -print-fp -ander -dump-callgraph $fuzzer.0.0.preopt.bc
     mv ./indirect.txt $TMPDIR/
     
-    #cp /aflgo/scripts/fuzz/indirect.txt $TMPDIR/
-    #popd
-
     echo "($STEP) Constructing CG for $fuzzer.."
     while ! opt -dot-callgraph $fuzzer.0.0.*.bc >/dev/null 2> $TMPDIR/step${STEP}.log ; do
       echo -e "\e[93;1m[!]\e[0m Could not generate call graph. Repeating.."
     done
 
-    opt -load /selectfuzz/libDFUZZPASS.so -DFUZZPASS $fuzzer.0.0.preopt.bc -targets=$TMPDIR/BBtargets.txt -outdir=$TMPDIR
+    opt -load $FUZZER/llvmpass/build/libDFUZZPASS.so -DFUZZPASS $fuzzer.0.0.preopt.bc -targets=$TMPDIR/BBtargets.txt -outdir=$TMPDIR
 
     #Remove repeated lines and rename
     awk '!a[$0]++' callgraph.dot > callgraph.1.dot
